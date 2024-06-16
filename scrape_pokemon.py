@@ -1,6 +1,7 @@
 from bs4 import BeautifulSoup
 import requests
 import os
+import json
 from tqdm import tqdm
 
 # Directory to save images
@@ -33,6 +34,9 @@ print(f"Found {len(pokemon_rows)} Pokémon forms.")
 # Initialize the progress bar
 pbar = tqdm(total=len(pokemon_rows), ncols=70, bar_format='{l_bar}{bar}| {n_fmt}/{total_fmt} {postfix}')
 
+# Initialize a list to store all Pokémon data
+pokemon_data = []
+
 # Loop through each Pokémon row
 for i, pokemon_row in enumerate(pokemon_rows):
     # Find the Pokémon name and image URL
@@ -54,8 +58,17 @@ for i, pokemon_row in enumerate(pokemon_rows):
             # Check if the request was successful
             if response.status_code == 200:
                 # Save the image
-                with open(os.path.join(save_dir, f"{pokemon_name}_{i}.png"), 'wb') as file:
+                image_filename = f"{pokemon_name}_{i}.png"
+                with open(os.path.join(save_dir, image_filename), 'wb') as file:
                     file.write(response.content)
+
+                # Add the data to the list
+                pokemon_data.append({
+                    "index": i,
+                    "src": image_filename,
+                    "types": []  # TODO: Add code to scrape the Pokémon types
+                })
+
                 pbar.set_postfix_str(f"Downloading {pokemon_name}")
             else:
                 pbar.set_postfix_str(f"Failed to download {pokemon_name}")
@@ -63,5 +76,9 @@ for i, pokemon_row in enumerate(pokemon_rows):
     # Update the progress bar
     pbar.update()
 
+# Save the data
+with open('pokemon_data.json', 'w') as file:
+    json.dump(pokemon_data, file)
+
 pbar.close()
-print("All images downloaded.")
+print("All images and data downloaded.")
