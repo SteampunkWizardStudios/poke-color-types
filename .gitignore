@@ -162,4 +162,4 @@ cython_debug/
 #.idea/
 
 # folder where all the pokemon are downloaded to
-pokemon_images/
+pokemon_images
