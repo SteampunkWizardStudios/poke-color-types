@@ -1,6 +1,7 @@
 import json
 import colorsys
 import numpy as np
+from collections import Counter
 from colorama import Fore, Back, Style, init
 init(autoreset=True)
 
@@ -8,40 +9,36 @@ init(autoreset=True)
 with open('pokemon_data.json', 'r') as file:
     pokemon_data = json.load(file)
 
-# Create a dictionary to store the average color and count for each type combination
+# Create a dictionary to store the mode color and count for each type combination
 type_colors = {}
 
 # Loop over each Pokémon
 for pokemon in pokemon_data:
-    # Get the types and average color of the Pokémon
+    # Get the types and dominant color of the Pokémon
     types = tuple(sorted(pokemon['types']))
     dominant_color = pokemon['dominant_color']
 
     # Convert RGB to HSL
     hsl_color = colorsys.rgb_to_hls(*[x/255. for x in dominant_color])
 
-    # Adjust colors to make them more vibrant
-    hsl_color = (hsl_color[0], 0.5, 1)
-
-    # Add the average color to the corresponding entry in the dictionary
+    # Add the color to the corresponding entry in the dictionary
     if types in type_colors:
-        type_colors[types]['colors'].append(hsl_color)
-        type_colors[types]['count'] += 1
+        type_colors[types].append(hsl_color)
     else:
-        type_colors[types] = {'colors': [hsl_color], 'count': 1}
+        type_colors[types] = [hsl_color]
 
-# Calculate the average color for each type combination
-for types, data in type_colors.items():
-    # Calculate the average HSL values
-    avg_hsl = np.mean(data['colors'], axis=0)
+# Calculate the mode color for each type combination
+for types, colors in type_colors.items():
+    # Calculate the mode HSL values
+    mode_hsl = Counter(colors).most_common(1)[0][0]
 
-    # Convert the average HSL values back to RGB
-    avg_rgb = colorsys.hls_to_rgb(*avg_hsl)
+    # Convert the mode HSL values back to RGB
+    mode_rgb = colorsys.hls_to_rgb(*mode_hsl)
 
     # Round the RGB values and convert to int
-    avg_rgb_rounded = tuple(map(lambda x: round(x*255), avg_rgb))
+    mode_rgb_rounded = tuple(map(lambda x: round(x*255), mode_rgb))
 
-    type_colors[types]['dominant_color'] = avg_rgb_rounded
+    type_colors[types] = {'dominant_color': mode_rgb_rounded, 'count': len(colors)}
 
 # Print the results
 for types, data in type_colors.items():
