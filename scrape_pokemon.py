@@ -62,11 +62,15 @@ for i, pokemon_row in enumerate(pokemon_rows):
                 with open(os.path.join(save_dir, image_filename), 'wb') as file:
                     file.write(response.content)
 
+                # Scrape the Pokémon types
+                pokemon_types = pokemon_row.find_all('td', style=lambda value: value and 'background' in value)
+                types = [type_tag.find('a').get_text() for type_tag in pokemon_types if type_tag.find('a')]
+
                 # Add the data to the list
                 pokemon_data.append({
                     "index": i,
                     "src": image_filename,
-                    "types": []  # TODO: Add code to scrape the Pokémon types
+                    "types": types
                 })
 
                 pbar.set_postfix_str(f"Downloading {pokemon_name}")
